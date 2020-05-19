@@ -18,7 +18,12 @@
 (define-condition triangle-error  (error) ())
 
 (defun triangle (a b c)
-  :write-me)
+  (destructuring-bind (maxs mids mins) (sort (list a b c) #'>)
+    (loop for side in (list maxs mids mins) do (when (<= side 0) (error 'triangle-error)))
+    (when (>= maxs (+ mids mins)) (error 'triangle-error))
+    (when (equal maxs mins) (return-from triangle :equilateral))
+    (when (or (equal maxs mids) (equal mids mins)) (return-from triangle :isosceles)))
+  :scalene)
 
 
 (define-test test-equilateral-triangles-have-equal-sides
