@@ -49,9 +49,33 @@
 ;
 ; Your goal is to write the score method.
 
+(defun count-sides (dice)
+  (setf sides-map (make-hash-table))
+  (loop for i from 1 upto 6 do
+    (setf (gethash i sides-map) 0))
+  (loop for side in dice do
+    (multiple-value-bind (val exists) (gethash side sides-map)
+      (if exists
+	  (setf (gethash side sides-map) (+ val 1))
+	  (setf (gethash side sides-map) 1))))
+  sides-map)
+
 (defun score (dice)
-  ; You need to write this method
-)
+  (setf sides-count (count-sides dice))
+  (setf result 0)
+  (let ((ones (gethash 1 sides-count)))
+    (multiple-value-bind (triplets singles) (floor ones 3)
+      (setf result (+ result (+ (* 1000 triplets) (* 100 singles))))))
+  (loop for side from 2 upto 6 do
+    (let* (
+	   (side-count (gethash side sides-count))
+	   (triplets (floor side-count 3)))
+      (setf result (+ result (* side (* 100 triplets))))))
+  (let* (
+	 (fives (gethash 5 sides-count))
+	 (singles (rem fives 3)))
+    (setf result (+ result (* 50 singles))))
+  result)
 
 (define-test test-score-of-an-empty-list-is-zero
     (assert-equal 0 (score nil)))
